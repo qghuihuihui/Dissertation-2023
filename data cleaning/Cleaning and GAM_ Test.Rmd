@@ -1,0 +1,464 @@
+---
+title: "GAM"
+author: "QGH"
+date: '2023-01-26'
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+
+E01013810 <- Notting_VAS[Notting_VAS$code=="E01033411",]
+
+gam.result <- gam(rate~s(mon), data=E01013810, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(E01013811$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2")
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=18, col="goldenrod3", lty=1 )
+
+```
+
+```{r setup, include=FALSE}
+
+E01013810 <- Notting_VAS[Notting_VAS$code=="E01033411",]
+
+gam.result <- gam(rate~s(mon), data=Notting_VAS, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(Notting_VAS$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2")
+abline( h=0, col="cyan4", lty=2 )
+
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=15, col="goldenrod3", lty=1 )
+abline( v=16, col="goldenrod3", lty=1 )
+
+gam.result.1 <- gam(rate~s(mon), data=Anti, method="REML")
+
+View(Anti)
+
+summary(gam.result.1)
+
+x_new <- seq(0,max(Anti$mon),length.out=100)
+y_pred <- predict(gam.result.1, data.frame(mon=x_new))
+
+plot(gam.result.1,  shade = TRUE, shade.col = "azure2")
+abline( h=0, col="cyan4", lty=2 )
+
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=15, col="goldenrod3", lty=1 )
+abline( v=16, col="goldenrod3", lty=1 )
+
+```
+
+```{r setup, include=FALSE}
+
+vio <- read.csv("LSOA Code vio.csv")
+
+vio <- data.frame(vio$Code,vio$Phase.1,vio$Phase.2,vio$Phase.3)
+
+names(vio) <- c("code","Phase1","Phase2","Phase3")
+
+vio$Phase1[vio$Phase1 == 'N'] <- "Insignificant"
+vio$Phase1[vio$Phase1 == 'S'] <- "Significant"
+vio$Phase2[vio$Phase2 == 'N'] <- "Insignificant"
+vio$Phase2[vio$Phase2 == 'S'] <- "Significant"
+vio$Phase3[vio$Phase3 == 'N'] <- "Insignificant"
+vio$Phase3[vio$Phase3 == 'S'] <- "Significant"
+
+violence<- merge(data_not,vio, by.x="code", by.y="code")
+
+color <- c("lavenderblush1","lightcoral")
+
+tm_shape(violence) + tm_borders(lwd = .2)+ tm_polygons(col="Phase1", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+tm_shape(violence) + tm_borders(lwd = .2)+  tm_polygons(col="Phase2", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+tm_shape(violence) + tm_borders(lwd = .2)+  tm_polygons(col="Phase3", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+View(Anti)
+
+
+
+```
+
+```{r car, include=FALSE}
+
+E01013810 <- Anti[Anti$lsoa=="E01033410",]
+
+gam.result <- gam(rate~s(mon), data=E01013811, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(E01013811$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2")
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="red", lty=2 )
+abline( v=18, col="red", lty=2 )
+
+write.csv(Anti,"ASB.csv")
+
+View(Anti)
+
+```
+
+```{r setup, include=FALSE}
+
+ant <- read.csv("LSOA Code anti.csv")
+
+ant <- data.frame(ant$Code,ant$Phase.1,ant$Phase.2,ant$Phase.3)
+
+names(ant) <- c("code","Phase1","Phase2","Phase3")
+
+ant$Phase1[ant$Phase1 == 'N'] <- "Insignificant"
+ant$Phase1[ant$Phase1 == 'S'] <- "Significant"
+ant$Phase2[ant$Phase2 == 'N'] <- "Insignificant"
+ant$Phase2[ant$Phase2 == 'S'] <- "Significant"
+ant$Phase3[ant$Phase3 == 'N'] <- "Insignificant"
+ant$Phase3[ant$Phase3 == 'S'] <- "Significant"
+
+violence<- merge(data_not,vio, by.x="code", by.y="code")
+
+color <- c("lavenderblush1","lightcoral")
+
+tm_shape(violence) + tm_borders(lwd = .2)+ tm_polygons(col="Phase1", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+tm_shape(violence) + tm_borders(lwd = .2)+  tm_polygons(col="Phase2", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+tm_shape(violence) + tm_borders(lwd = .2)+  tm_polygons(col="Phase3", palette=color, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+```
+
+```{r setup, include=FALSE}
+
+eth <- read.csv("eth.csv")
+
+eth<- eth[,-10]
+
+pop <- data.frame(pop_notting$LSOA.Code,pop_notting$All.Ages)
+
+names(pop)<- c("lsoa","pop")
+
+eth_1 <- merge(pop,eth,by="lsoa")
+
+eth_1$aao <- eth_1$pop * eth_1$aao
+eth_1$abd <- eth_1$pop * eth_1$abd
+eth_1$acn <- eth_1$pop * eth_1$acn
+eth_1$ain <- eth_1$pop * eth_1$ain
+eth_1$apk <- eth_1$pop * eth_1$apk
+eth_1$baf <- eth_1$pop * eth_1$baf
+eth_1$bca <- eth_1$pop * eth_1$bca
+eth_1$wbr <- eth_1$pop * eth_1$wbr
+eth_1$wir <- eth_1$pop * eth_1$wir
+eth_1$wao <- eth_1$pop * eth_1$wao
+eth_1$oxx <- eth_1$pop * eth_1$oxx
+
+eth_1 <- data.frame(eth_1$lsoa,eth_1$aao,eth_1$abd,eth_1$acn,eth_1$ain,eth_1$apk,eth_1$baf,eth_1$bca,eth_1$oxx,eth_1$wao,eth_1$wbr,eth_1$wir)
+
+names(eth_1) <- c("lsoa","aao","abd","acn","ain","apk","baf","bca","oxx","wao","wbr","wir")
+
+install.packages("vegan")
+library(vegan)
+
+eth_1$Simpson <- diversity(eth_1[-1], index="simpson")
+
+library(plyr)
+
+eth2 <- as.data.frame(ddply(eth_1,~lsoa,function(x) {
++         data.frame(SIMPSON=diversity(x[-1], index="simpson"))}))
+
+View(eth2)
+```
+
+```{r setup, include=FALSE}
+
+income <- data.frame(imd_notting$LSOA.code..2011.,imd_notting$Income.Decile..where.1.is.most.deprived.10..of.LSOAs.)
+
+names(income) <- c("lsoa","income")
+
+Anti_effect<- merge(Anti,eth2, by="lsoa")
+
+Anti_effect<- merge(Anti_effect,income, by="lsoa")
+
+Anti_effect$SIMPSON <- Anti_effect$SIMPSON * 100
+
+summary(Anti_effect$income)
+
+Anti_effect$health <- as.numeric(Anti_effect$health)
+
+model_1<- gam(rate~ s(employ)+s(income)+ s(SIMPSON)+ s(div_per)+ s(ptai)+ s(edu)+ s(den)+ s(mon),data=Anti_effect, method="REML")
+
+model_1<- gam(rate~ health+income+ SIMPSON+div_per+ ptai+ edu+ den+ s(mon),data=Anti_effect, method="REML")
+
+model_2<- gam(rate~ health+income+ s(SIMPSON)+div_per+ ptai+ edu+ s(den)+ s(mon),data=Anti_effect, method="REML")
+
+model_3<- gam(rate~ health+income+SIMPSON+div_per+ ptai+ edu+ den,data=Anti_effect, method="REML")
+
+summary(model_1)
+
+summary(model_2)
+
+summary(model_3)
+
+View(Anti_effect)
+
+```
+
+
+
+```{r setup, include=FALSE}
+
+View(Notting_VAS)
+
+names(Notting_VAS) <- c("lsoa","month","vsa","mon_")
+
+VSA_effect<- merge(Anti,Notting_VAS, by="lsoa")
+
+VSA_effect$month.x <- as.Date(paste(VSA_effect$month.x,"-01",sep=""))
+
+VSA_effect$mm<- format(VSA_effect$month.x,"%m")
+
+VSA_effect$mm <- as.numeric(VSA_effect$mm)
+
+VSA_effect$se[VSA_effect$mm == '12'|VSA_effect$mm == '1'|VSA_effect$mm == '2'] <- "winter"
+
+VSA_effect$se[VSA_effect$mm == '3'|VSA_effect$mm == '4'|VSA_effect$mm == '5'] <- "spring"
+
+VSA_effect$se[VSA_effect$mm == '6'|VSA_effect$mm == '7'|VSA_effect$mm == '8'] <- "summer"
+
+VSA_effect$se[VSA_effect$mm == '9'|VSA_effect$mm == '10'|VSA_effect$mm == '11'] <- "autmn"
+
+VSA_effect$ld[VSA_effect$month.x == '2019-10-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2019-11-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2019-12-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-01-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-02-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-03-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-04-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-05-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-06-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-07-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-08-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-09-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-10-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2020-11-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2020-12-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2021-01-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x== '2021-02-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2021-03-01'] <- 1
+VSA_effect$ld[VSA_effect$month.x == '2021-04-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2021-05-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-06-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-07-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-08-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-09-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-10-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2021-11-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2021-12-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-01-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-02-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2022-03-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-04-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2022-05-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-06-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-07-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-08-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x== '2022-09-01'] <- 0
+VSA_effect$ld[VSA_effect$month.x == '2022-10-01'] <- 0
+
+View(VSA_effect)
+
+```
+
+```{r setup, include=FALSE}
+
+## First model with general strain control
+
+model_1<- gam(vsa~ health+ + edu+ income+ SIMPSON+div_per+ ptai+ den,data=VSA_effect, method="REML")
+
+summary(model_1)
+
+## Second model with general strain control, season control
+
+model_2<- gam(vsa~ health+income+ SIMPSON+div_per+ ptai+ edu+ den+ s(mm),data=VSA_effect, method="REML")
+
+summary(model_2)
+
+## Third model with general strain control, season control and Covid control
+
+model_3<- gam(vsa~ ld+health+income+SIMPSON+div_per+ ptai+ edu+ den+ s(mm),data=VSA_effect, method="REML")
+
+summary(model_3)
+
+## Forth model with general strain control, season control and Covid control
+
+model_4<- gam(vsa~ ld+health+income+SIMPSON+ div_per+ ptai+ edu+ s(den)+ s(mm),data=VSA_effect, method="REML")
+
+summary(model_4)
+
+
+
+```
+
+```{r setup, include=FALSE}
+
+## First model with general strain control
+
+model_1<- gam(vsa~ health+ + edu+ income+ SIMPSON+div_per+ ptai+ den + ld,data=VSA_effect, method="REML")
+
+summary(model_1)
+
+## Second model with general strain control, season control
+
+model_2<- gam(vsa~ health+income+ SIMPSON+div_per+ ptai+ edu+ den+ld+ s(mm),data=VSA_effect, method="REML")
+
+summary(model_2)
+
+
+```
+
+
+```{r setup, include=FALSE}
+
+count(crime_2019_05$Crime.type)
+
+base_crime<- aggregate(crime_2019_05$Crime.ID, by=list(crime_2019_05$LSOA.code,crime_2019_05$Crime.type), FUN=length)
+
+summary(VSA_effect$mon)
+
+names(base_crime) <- c("code","type","count")
+
+pop_not <- data.frame(data_not@data$pop,data_not@data$code)
+
+names(pop_not) <- c("pop","code")
+
+## anti
+
+base_anti <- subset(base_crime, base_crime$type== 'Anti-social behaviour')
+
+base_anti <- merge (base_anti,pop_not, by="code")
+
+base_anti$"ASB rate" <- base_anti$count/base_anti$pop*100000
+
+base_anti <- merge (data_not,base_anti, by.x="code",by.y="code")
+
+tm_shape(base_anti) + tm_borders(lwd = .2)+ tm_polygons(col="ASB rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+## phase 1
+
+crime_1<- aggregate(crime_2020_05$Crime.ID, by=list(crime_2020_05$LSOA.code,crime_2020_05$Crime.type), FUN=length)
+
+names(crime_1) <- c("code","type","count")
+
+## anti
+
+anti_1 <- subset(crime_1, crime_1$type== 'Anti-social behaviour')
+
+anti_1 <- merge (anti_1,pop_not, by="code")
+
+anti_1$"ASB rate" <- anti_1$count/anti_1$pop*100000
+
+anti_1 <- merge (data_not,anti_1, by.x="code",by.y="code")
+
+tm_shape(base_anti) + tm_borders(lwd = .2)+ tm_polygons(col="ASB rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+tm_shape(anti_1) + tm_borders(lwd = .2)+ tm_polygons(col="ASB rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+```
+
+```{r setup, include=FALSE}
+
+base_crime<- aggregate(crime_2019_05$Crime.ID, by=list(crime_2019_05$LSOA.code,crime_2019_05$Crime.type), FUN=length)
+
+names(base_crime) <- c("code","type","count")
+
+pop_not <- data.frame(data_not@data$pop,data_not@data$code)
+
+names(pop_not) <- c("pop","code")
+
+View(base_crime)
+
+## anti
+
+base_vio <- subset(base_crime, base_crime$type== 'Violence and sexual offences')
+
+base_vio <- merge (base_vio,pop_not, by="code")
+
+base_vio$"VSA rate" <- base_vio$count/base_vio$pop*100000
+
+base_vio <- merge (data_not,base_vio, by.x="code",by.y="code")
+
+tm_shape(base_vio) + tm_borders(lwd = .2)+ tm_polygons(col="VSA rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+## phase 1
+
+crime_1<- aggregate(crime_2019_05$Crime.ID, by=list(crime_2019_05$LSOA.code,crime_2019_05$Crime.type), FUN=length)
+
+names(crime_1) <- c("code","type","count")
+
+## anti
+
+vio_0 <- subset(crime_1, crime_1$type== 'Violence and sexual offences')
+
+vio_0 <- merge (vio_0,pop_not, by="code")
+
+vio_0$"VSA rate" <- vio_0$count/vio_0$pop*100000
+
+vio_0 <- merge (data_not,vio_0, by.x="code",by.y="code")
+
+tm_shape(base_vio) + tm_borders(lwd = .2)+ tm_polygons(col="VSA rate", palette="PRGn", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+tm_shape(vio_1) + tm_borders(lwd = .2)+ tm_polygons(col="VSA rate", palette="PRGn", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+```
+
+
+```{r setup, include=FALSE}
+
+## phase 1
+
+crime_2<- aggregate(crime_2021_05$Crime.ID, by=list(crime_2021_05$LSOA.code,crime_2021_05$Crime.type), FUN=length)
+
+names(crime_2) <- c("code","type","count")
+
+## anti
+
+anti_2 <- subset(crime_2, crime_2$type== 'Anti-social behaviour')
+
+anti_2 <- merge (anti_2,pop_not, by="code")
+
+anti_2$"ASB rate" <- anti_2$count/anti_2$pop*100000
+
+anti_2 <- merge (data_not,anti_2, by.x="code",by.y="code")
+
+tm_shape(anti_2) + tm_borders(lwd = .2)+ tm_polygons(col="ASB rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+  
+  ```

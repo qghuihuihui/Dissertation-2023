@@ -1,0 +1,505 @@
+---
+title: "2nd_markdown_cleandata"
+author: "QGH"
+date: '2022-12-12'
+output: html_document
+---
+
+## install packages
+
+```{r package install, include=FALSE}
+
+install.packages( "dplyr" )      
+install.packages( "pander" )   
+install.packages( "stargazer" )  
+install.packages( "scales" )   
+
+```
+
+## library
+
+```{r load data, include=FALSE}
+
+library( "scales" )        
+library( "stargazer" )     
+library( "dplyr" )         
+library( "pander" )        
+library( "Wats" )
+library(lme4)
+
+```
+
+
+## For segmented regression: Subset dataset to ASB and VSO
+
+```{r data renaming, include=FALSE}
+
+dataframe_not <- data_not@data
+
+time <- total_crime_month ## the dataframe of total_crime_month is from the data cleaning rmd.
+
+cal_anti <- subset(total_crime_month, total_crime_month$Type== 'Anti-social behaviour')
+
+cal_vio <- subset(total_crime_month,total_crime_month$Type== 'Violence and sexual offences')
+
+time$Count <- time$Count/337098* 100000
+
+Anti_time <- subset(time, time$Type== 'Anti-social behaviour')
+
+Violence_time <- subset(time, time$Type== 'Violence and sexual offences')
+
+```
+
+##  For GAM regression: Time series data
+
+```{r data renaming, include=FALSE}
+
+Anti_time <- 1:36
+
+Anti_time$D <- ifelse (Anti_time$T>6,1,0)
+
+Anti_time$P <- c(0,0,0,0,0,0,1:30)
+
+Violence_time$T <- 1:36
+
+Violence_time$D <- ifelse (Violence_time$T>6,1,0)
+
+Violence_time$P <- c(0,0,0,0,0,0,1:30)
+
+```
+
+##  For GAM regression:  Subset dataset to ASB and VSO
+
+```{r regression, include=FALSE}
+
+crime_lsoa_month<- aggregate(Total_crime$Crime.ID, by=list(Total_crime$Month,Total_crime$Crime.type,Total_crime$LSOA.code), FUN=length)
+
+## Total_crime dataframe is from the merging rmd.
+
+names(crime_lsoa_month) <- c("month","type","lsoa","count")
+
+final_crime <- aggregate(crime_lsoa_month$month, by=list(crime_lsoa_month$month,crime_lsoa_month$lsoa,crime_lsoa_month$type,crime_lsoa_month$count),FUN=length)
+
+final_crime <- data.frame(final_crime$Group.1,final_crime$Group.2,final_crime$Group.3,final_crime$Group.4)
+
+names(final_crime) <- c("month","lsoa","type","count")
+
+final_crime_try <- merge (final_crime,pop_no, by.x="lsoa", by.y="Code")
+
+final_crime_try$ rate <- final_crime_try$count/final_crime_try$Pop* 100000
+
+Anti_seg<- subset(final_crime_try, final_crime_try$type== 'Anti-social behaviour')
+
+Violence_seg <- subset(final_crime_try, final_crime_try$type== 'Violence and sexual offences')
+
+names(Violence_seg) <- c("lsoa","month","type","count","pop","vsa")
+
+```
+
+## Transform month into number
+
+```{r data renaming, include=FALSE}
+
+Violence_seg$mon <- Violence_seg$month
+
+Violence_seg$mon[Violence_seg$mon == '2019-04'] <- 1
+Violence_seg$mon[Violence_seg$mon == '2019-05'] <- 2
+Violence_seg$mon[Violence_seg$mon == '2019-06'] <- 3
+Violence_seg$mon[Violence_seg$mon == '2019-07'] <- 4
+Violence_seg$mon[Violence_seg$mon == '2019-09'] <- 6
+Violence_seg$mon[Violence_seg$mon == '2019-10'] <- 7
+Violence_seg$mon[Violence_seg$mon == '2019-11'] <- 8
+Violence_seg$mon[Violence_seg$mon == '2019-12'] <- 9
+Violence_seg$mon[Violence_seg$mon == '2020-01'] <- 10
+Violence_seg$mon[Violence_seg$mon == '2020-02'] <- 11
+Violence_seg$mon[Violence_seg$mon == '2020-03'] <- 12
+Violence_seg$mon[Violence_seg$mon == '2020-04'] <- 13
+Violence_seg$mon[Violence_seg$mon == '2020-05'] <- 14
+Violence_seg$mon[Violence_seg$mon == '2020-06'] <- 15
+Violence_seg$mon[Violence_seg$mon == '2020-07'] <- 16
+Violence_seg$mon[Violence_seg$mon == '2020-08'] <- 17
+Violence_seg$mon[Violence_seg$mon == '2020-09'] <- 18
+Violence_seg$mon[Violence_seg$mon == '2020-10'] <- 19
+Violence_seg$mon[Violence_seg$mon == '2020-11'] <- 20
+Violence_seg$mon[Violence_seg$mon == '2020-12'] <- 21
+Violence_seg$mon[Violence_seg$mon == '2021-01'] <- 22
+Violence_seg$mon[Violence_seg$mon == '2021-02'] <- 23
+Violence_seg$mon[Violence_seg$mon == '2021-03'] <- 24
+Violence_seg$mon[Violence_seg$mon == '2021-04'] <- 25
+Violence_seg$mon[Violence_seg$mon == '2021-05'] <- 26
+Violence_seg$mon[Violence_seg$mon == '2021-06'] <- 27
+Violence_seg$mon[Violence_seg$mon == '2021-07'] <- 28
+Violence_seg$mon[Violence_seg$mon == '2021-08'] <- 29
+Violence_seg$mon[Violence_seg$mon == '2021-09'] <- 30
+Violence_seg$mon[Violence_seg$mon == '2021-10'] <- 31
+Violence_seg$mon[Violence_seg$mon == '2021-11'] <- 32
+Violence_seg$mon[Violence_seg$mon == '2021-12'] <- 33
+Violence_seg$mon[Violence_seg$mon == '2022-01'] <- 34
+Violence_seg$mon[Violence_seg$mon == '2022-02'] <- 35
+Violence_seg$mon[Violence_seg$mon == '2022-03'] <- 36
+Violence_seg$mon[Violence_seg$mon == '2022-04'] <- 37
+Violence_seg$mon[Violence_seg$mon == '2022-05'] <- 38
+Violence_seg$mon[Violence_seg$mon == '2022-06'] <- 39
+Violence_seg$mon[Violence_seg$mon == '2022-07'] <- 40
+Violence_seg$mon[Violence_seg$mon == '2022-08'] <- 41
+Violence_seg$mon[Violence_seg$mon == '2022-09'] <- 42
+Violence_seg$mon[Violence_seg$mon == '2022-10'] <- 43
+
+Anti_seg$mon[Anti_seg$mon == '2019-04'] <- 1
+Anti_seg$mon[Anti_seg$mon == '2019-05'] <- 2
+Anti_seg$mon[Anti_seg$mon == '2019-06'] <- 3
+Anti_seg$mon[Anti_seg$mon == '2019-07'] <- 4
+Anti_seg$mon[Anti_seg$mon == '2019-09'] <- 6
+Anti_seg$mon[Anti_seg$mon == '2019-10'] <-7
+Anti_seg$mon[Anti_seg$mon == '2019-11'] <- 8
+Anti_seg$mon[Anti_seg$mon == '2019-12'] <- 9
+Anti_seg$mon[Anti_seg$mon == '2020-01'] <- 10
+Anti_seg$mon[Anti_seg$mon == '2020-02'] <- 11
+Anti_seg$mon[Anti_seg$mon == '2020-03'] <- 12
+Anti_seg$mon[Anti_seg$mon == '2020-04'] <- 13
+Anti_seg$mon[Anti_seg$mon == '2020-05'] <- 14
+Anti_seg$mon[Anti_seg$mon == '2020-06'] <- 15
+Anti_seg$mon[Anti_seg$mon == '2020-07'] <- 16
+Anti_seg$mon[Anti_seg$mon == '2020-08'] <- 17
+Anti_seg$mon[Anti_seg$mon == '2020-09'] <- 18
+Anti_seg$mon[Anti_seg$mon == '2020-10'] <- 19
+Anti_seg$mon[Anti_seg$mon == '2020-11'] <- 20
+Anti_seg$mon[Anti_seg$mon == '2020-12'] <- 21
+Anti_seg$mon[Anti_seg$mon == '2021-01'] <- 22
+Anti_seg$mon[Anti_seg$mon == '2021-02'] <- 23
+Anti_seg$mon[Anti_seg$mon == '2021-03'] <- 24
+Anti_seg$mon[Anti_seg$mon == '2021-04'] <- 25
+Anti_seg$mon[Anti_seg$mon == '2021-05'] <- 26
+Anti_seg$mon[Anti_seg$mon == '2021-06'] <- 27
+Anti_seg$mon[Anti_seg$mon == '2021-07'] <- 28
+Anti_seg$mon[Anti_seg$mon == '2021-08'] <- 29
+Anti_seg$mon[Anti_seg$mon == '2021-09'] <- 30
+Anti_seg$mon[Anti_seg$mon == '2021-10'] <- 31
+Anti_seg$mon[Anti_seg$mon == '2021-11'] <- 32
+Anti_seg$mon[Anti_seg$mon == '2021-12'] <- 33
+Anti_seg$mon[Anti_seg$mon == '2022-01'] <- 34
+Anti_seg$mon[Anti_seg$mon == '2022-02'] <- 35
+Anti_seg$mon[Anti_seg$mon == '2022-03'] <- 36
+Anti_seg$mon[Anti_seg$mon == '2022-04'] <- 37
+Anti_seg$mon[Anti_seg$mon == '2022-05'] <- 38
+Anti_seg$mon[Anti_seg$mon == '2022-06'] <- 39
+Anti_seg$mon[Anti_seg$mon == '2022-07'] <- 40
+Anti_seg$mon[Anti_seg$mon == '2022-08'] <- 41
+Anti_seg$mon[Anti_seg$mon == '2022-09'] <- 42
+Anti_seg$mon[Anti_seg$mon == '2022-10'] <- 43
+
+Anti_seg$mon <- as.numeric(Anti_seg$mon)
+
+```
+
+
+```{r data renaming, include=FALSE}
+
+Anti_seg$P[Anti_seg$month == '2019-10'] <- 0
+Anti_seg$P[Anti_seg$month == '2019-11'] <- 0
+Anti_seg$P[Anti_seg$month == '2019-12'] <- 0
+Anti_seg$P[Anti_seg$month == '2020-01'] <- 0
+Anti_seg$P[Anti_seg$month == '2020-02'] <- 0
+Anti_seg$P[Anti_seg$month == '2020-03'] <- 0
+Anti_seg$P[Anti_seg$month == '2020-04'] <- 1
+Anti_seg$P[Anti_seg$month == '2020-05'] <- 2
+Anti_seg$P[Anti_seg$month == '2020-06'] <- 3
+Anti_seg$P[Anti_seg$month == '2020-07'] <- 4
+Anti_seg$P[Anti_seg$month == '2020-08'] <- 5
+Anti_seg$P[Anti_seg$month == '2020-09'] <- 6
+Anti_seg$P[Anti_seg$month == '2020-10'] <- 7
+Anti_seg$P[Anti_seg$month == '2020-11'] <- 8
+Anti_seg$P[Anti_seg$month == '2020-12'] <- 9
+Anti_seg$P[Anti_seg$month == '2021-01'] <- 10
+Anti_seg$P[Anti_seg$month == '2021-02'] <- 11
+Anti_seg$P[Anti_seg$month == '2021-03'] <- 12
+Anti_seg$P[Anti_seg$month == '2021-04'] <- 13
+Anti_seg$P[Anti_seg$month == '2021-05'] <- 14
+Anti_seg$P[Anti_seg$month == '2021-06'] <- 15
+Anti_seg$P[Anti_seg$month == '2021-07'] <- 16
+Anti_seg$P[Anti_seg$month == '2021-08'] <- 17
+Anti_seg$P[Anti_seg$month == '2021-09'] <- 18
+Anti_seg$P[Anti_seg$month == '2021-10'] <- 19
+Anti_seg$P[Anti_seg$month == '2021-11'] <- 20
+Anti_seg$P[Anti_seg$month == '2021-12'] <- 21
+Anti_seg$P[Anti_seg$month == '2022-01'] <- 22
+Anti_seg$P[Anti_seg$month == '2022-02'] <- 23
+Anti_seg$P[Anti_seg$month == '2022-03'] <- 24
+Anti_seg$P[Anti_seg$month == '2022-04'] <- 25
+Anti_seg$P[Anti_seg$month == '2022-05'] <- 26
+Anti_seg$P[Anti_seg$month == '2022-06'] <- 27
+Anti_seg$P[Anti_seg$month == '2022-07'] <- 28
+Anti_seg$P[Anti_seg$month == '2022-08'] <- 29
+Anti_seg$P[Anti_seg$month == '2022-09'] <- 30
+Anti_seg$P[Anti_seg$month == '2022-10'] <- 31
+
+Anti_seg$D <- ifelse (Anti_seg$mon>6,1,0)
+
+Anti_seg$P <- as.numeric(Anti_seg$P)
+Anti_seg$D <- as.numeric(Anti_seg$D)
+View(dataframe_not)
+
+Anti<- merge (Anti_seg,dataframe_not, by.x="lsoa", by.y="ls11c")
+
+viovio<- merge (Violence_seg, Anti, by="month")
+
+
+```
+
+## Have a try of segmented regression
+
+```{r regression, include=FALSE}
+
+regTS2 = lm ( rate ~ mon + D + P + sur_per, data=Anti)
+
+pred12 <- predict(regTS2, Anti) 
+
+plot( Anti$rate,
+      bty="n",
+      col = gray(0.5,0.5), pch=19,
+      xlim = c(1, 36), 
+      ylim = c(0, 700),
+      xlab = "Time (Month)", 
+      ylab = "Crime rate")
+
+lines( rep(1:6.8), pred1[1:6.8], col="dodgerblue4", lwd = 3 )
+lines( rep(7:36), pred12[7:36], col="dodgerblue4", lwd = 3 )
+lines( rep(7:36), pred2[7:36], col="darkorange2", lwd = 3, lty = 5 ) 
+
+text(0, 250, labels = "Predicted values", pos = 4, cex = 1, col = "dodgerblue3")
+text(25, 250, labels = "Counterfactual", pos = 4, cex = 1, col = "darkorange2")
+
+summary(regTS2)
+
+```
+
+```{r regression, include=FALSE}
+
+regTS_Anti = lm ( rate ~ mon+D+P, data=Anti)
+
+pred_Anti <- predict(regTS_Anti, Anti) 
+
+plot( Anti$rate,
+      bty="n",
+      col = gray(0.5,0.5), pch=19,
+      xlim = c(1, 36), 
+      ylim = c(0, 700),
+      xlab = "Time (Month)", 
+      ylab = "Crime rate")
+
+lines( rep(1:6.8), pred1[1:6.8], col="dodgerblue4", lwd = 3 )
+lines( rep(7:36), pred_Anti[7:36], col="dodgerblue4", lwd = 3 )
+lines( rep(7:36), pred_Anti[7:36], col="darkorange2", lwd = 3, lty = 5 ) 
+
+text(0, 250, labels = "Predicted values", pos = 4, cex = 1, col = "dodgerblue3")
+text(25, 250, labels = "Counterfactual", pos = 4, cex = 1, col = "darkorange2")
+
+```
+
+
+```{r regression, include=FALSE}
+
+Anti$mon <- as.numeric(Anti$mon)
+
+Anti$Level <- ifelse (Anti$Level<28&Anti$Level>6,"Phase1",Anti$Level)
+
+Anti$Level[Anti$Level == 28] <- "Phase2"
+Anti$Level[Anti$Level == 29] <- "Phase2"
+Anti$Level[Anti$Level == 30] <- "Phase2"
+Anti$Level[Anti$Level == 31] <- "Phase2"
+Anti$Level[Anti$Level == 32] <- "Phase2"
+Anti$Level[Anti$Level == 33] <- "Phase2"
+Anti$Level[Anti$Level == 34] <- "Phase2"
+Anti$Level[Anti$Level == 35] <- "Phase2"
+Anti$Level[Anti$Level == 36] <- "Phase2"
+Anti$Level[Anti$Level == 37] <- "Phase2"
+
+Anti$Level[Anti$Level == 1] <- "Phase0"
+Anti$Level[Anti$Level == 2] <- "Phase0"
+Anti$Level[Anti$Level == 3] <- "Phase0"
+Anti$Level[Anti$Level == 4] <- "Phase0"
+Anti$Level[Anti$Level == 5] <- "Phase0"
+Anti$Level[Anti$Level == 6] <- "Phase0"
+
+table(Anti$Level)
+
+```
+
+## GAM regression for VSO
+
+```{r regression, include=FALSE}
+
+install.packages("mgcv")
+library(mgcv)
+
+E01013811 <- Anti[Anti$lsoa=="E01013811",]
+
+viovio.1 <- data.frame(viovio$mon,viovio$vsa)
+
+names(viovio.1) <- c("mon","vsa")
+
+Violence_seg$mon <- as.numeric(Violence_seg$mon )
+
+gam.result <- gam(rate~s(mon), data=Anti, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(Anti$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,shade=TRUE,shade.col="azure2")
+abline( h=0, col="cyan4", lty=2 )
+
+
+E01013812 <- Anti[Anti$lsoa=="E01013812",]
+
+gam.result <- gam(rate~s(mon), data=E01013812, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(E01013812$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE)
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=18, col="goldenrod3", lty=1 )
+
+```
+
+## GAM regression for ASB
+
+```{r regression, include=FALSE}
+
+Notting_anti<- aggregate(Anti$`count`, by=list(Anti$mon), FUN=sum)
+
+Notting_anti$month<- c(1:36)
+
+Notting_anti <- data_frame(Notting_anti$month, Notting_anti$x)
+
+names(Notting_anti) <- c("mon","count")
+
+Notting_anti$rate <- Notting_anti$count/337098* 100000
+
+gam.result <- gam(rate~s(mon), data=Notting_anti, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(Notting_anti$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2",ylim=c(-300,300))
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=18, col="goldenrod3", lty=1 )
+
+```
+## Coding
+
+```{r regression, include=FALSE}
+
+Notting_violence <- data_frame(Violence_time$Month,Violence_time$Count)
+
+Notting_violence$month<- c(1:42)
+
+Notting_violence <- data_frame(Notting_violence$month,Notting_violence$`Violence_time$Count`)
+
+names(Notting_violence) <- c("mon","rate")
+
+gam.result <- gam(rate~s(mon), data=Notting_violence, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(Notting_violence$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2",ylim=c(-100,100))
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=18, col="goldenrod3", lty=1 )
+
+```
+
+## Transforming the month into number again.
+
+```{r regression, include=FALSE}
+
+write.csv(dataframe_not, "LSOA Code.csv", row.names=FALSE)
+
+total_crime_notting<- aggregate(Total_crime$Crime.ID, by=list(Total_crime$Month,Total_crime$Crime.type,Total_crime$LSOA.code), FUN=length)
+
+names(total_crime_notting) <- c("Month","Type","LSOA","Count")
+
+Notting_VAS<- subset(total_crime_notting, total_crime_notting$Type== 'Violence and sexual offences')
+
+Notting_VAS<- aggregate(Notting_VAS$Count, by=list(Notting_VAS$Month,Notting_VAS$LSOA), FUN=sum)
+
+names(Notting_VAS) <- c("mon","code","count")
+
+Notting_VAS <- merge (Notting_VAS,pop_no, by.x="code", by.y="Code")
+
+Notting_VAS$ rate <- Notting_VAS$count/Notting_VAS$Pop* 100000
+
+Notting_VAS <- data.frame(Notting_VAS$code,Notting_VAS$mon,Notting_VAS$rate)
+
+names(Notting_VAS) <- c("code","month","rate")
+
+Notting_VAS$mon[Notting_VAS$month == '2019-10'] <- 1
+Notting_VAS$mon[Notting_VAS$month == '2019-11'] <- 2
+Notting_VAS$mon[Notting_VAS$month == '2019-12'] <- 3
+Notting_VAS$mon[Notting_VAS$month == '2020-01'] <- 4
+Notting_VAS$mon[Notting_VAS$month == '2020-02'] <- 5
+Notting_VAS$mon[Notting_VAS$month == '2020-03'] <- 6
+Notting_VAS$mon[Notting_VAS$month == '2020-04'] <- 7
+Notting_VAS$mon[Notting_VAS$month == '2020-05'] <- 8
+Notting_VAS$mon[Notting_VAS$month == '2020-06'] <- 9
+Notting_VAS$mon[Notting_VAS$month == '2020-07'] <- 10
+Notting_VAS$mon[Notting_VAS$month == '2020-08'] <- 11
+Notting_VAS$mon[Notting_VAS$month == '2020-09'] <- 12
+Notting_VAS$mon[Notting_VAS$month == '2020-10'] <- 13
+Notting_VAS$mon[Notting_VAS$month == '2020-11'] <- 14
+Notting_VAS$mon[Notting_VAS$month == '2020-12'] <- 15
+Notting_VAS$mon[Notting_VAS$month == '2021-01'] <- 16
+Notting_VAS$mon[Notting_VAS$month == '2021-02'] <- 17
+Notting_VAS$mon[Notting_VAS$month == '2021-03'] <- 18
+Notting_VAS$mon[Notting_VAS$month == '2021-04'] <- 19
+Notting_VAS$mon[Notting_VAS$month == '2021-05'] <- 20
+Notting_VAS$mon[Notting_VAS$month == '2021-06'] <- 21
+Notting_VAS$mon[Notting_VAS$month == '2021-07'] <- 22
+Notting_VAS$mon[Notting_VAS$month == '2021-08'] <- 23
+Notting_VAS$mon[Notting_VAS$month == '2021-09'] <- 24
+Notting_VAS$mon[Notting_VAS$month == '2021-10'] <- 25
+Notting_VAS$mon[Notting_VAS$month == '2021-11'] <- 26
+Notting_VAS$mon[Notting_VAS$month == '2021-12'] <- 27
+Notting_VAS$mon[Notting_VAS$month == '2022-01'] <- 28
+Notting_VAS$mon[Notting_VAS$month == '2022-02'] <- 29
+Notting_VAS$mon[Notting_VAS$month == '2022-03'] <- 30
+Notting_VAS$mon[Notting_VAS$month == '2022-04'] <- 31
+Notting_VAS$mon[Notting_VAS$month == '2022-05'] <- 32
+Notting_VAS$mon[Notting_VAS$month == '2022-06'] <- 33
+Notting_VAS$mon[Notting_VAS$month == '2022-07'] <- 34
+Notting_VAS$mon[Notting_VAS$month == '2022-08'] <- 35
+Notting_VAS$mon[Notting_VAS$month == '2022-09'] <- 36
+Notting_VAS$mon[Notting_VAS$month == '2022-10'] <- 37
+
+Notting_VAS$mon <- as.numeric(Notting_VAS$mon )
+
+View(Notting_VAS)
+
+names(Notting_VAS) <- c("lsoa","month","rate","mon")
+
+E01013811 <- Notting_VAS[Notting_VAS$code=="E01013811",]
+
+gam.result <- gam(rate~s(mon), data=E01013811, method="REML")
+
+summary(gam.result)
+
+x_new <- seq(0,max(E01013811$mon),length.out=100)
+y_pred <- predict(gam.result, data.frame(mon=x_new))
+
+plot(gam.result,  shade = TRUE, shade.col = "azure2")
+abline( h=0, col="cyan4", lty=2 )
+abline( v=6, col="goldenrod3", lty=1 )
+abline( v=18, col="goldenrod3", lty=1 )
+
+```

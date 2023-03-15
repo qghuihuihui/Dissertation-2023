@@ -1,0 +1,147 @@
+---
+title: "Untitled"
+author: "QGH"
+date: '2023-02-05'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+
+## phase 1
+
+crime_2<- aggregate(crime_2021_05$Crime.ID, by=list(crime_2021_05$LSOA.code,crime_2021_05$Crime.type), FUN=length)
+
+names(crime_2) <- c("code","type","count")
+
+## anti
+
+vio_2 <- subset(crime_2, crime_2$type== 'Anti-social behaviours')
+
+vio_2 <- merge (vio_2,pop_not, by="code")
+
+vio_2$"VSA rate" <- vio_2$count/vio_2$pop*100000
+
+vio_2 <- merge (data_not,vio_2, by.x="code",by.y="code")
+
+tm_shape(vio_2) + tm_borders(lwd = .2)+ tm_polygons(col="VSA rate", palette="PRGn", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+## phase 1
+
+crime_3<- aggregate(crime_2022_05$Crime.ID, by=list(crime_2022_05$LSOA.code,crime_2022_05$Crime.type), FUN=length)
+
+names(crime_3) <- c("code","type","count")
+
+## anti
+
+vio_3 <- subset(crime_3, crime_3$type== 'Violence and sexual offences')
+
+vio_3 <- merge (vio_3,pop_not, by="code")
+
+vio_3$"VSA rate" <- vio_3$count/vio_3$pop*100000
+
+vio_3 <- merge (data_not,vio_3, by.x="code",by.y="code")
+
+tm_shape(vio_3) + tm_borders(lwd = .2)+ tm_polygons(col="VSA rate", palette="PRGn", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000))+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+  tm_shape(ward_shp) + tm_borders(lwd = .2)+ tm_polygons(col="cornsilk1", midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+ 
+region<- readOGR("Regions_December_2018_Ultra_Generalised_EN.shp")
+  
+  tm_shape(region) + tm_borders(lwd = .2)+ tm_polygons(col="bisque3", midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 50, 100), text.size = 1, position = c("left", "top"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+  
+  
+  ## KDE
+  
+
+  
+kde_anti_1 <- aggregate(crime_2022_05$Crime.ID, by=list(crime_2022_05$Longitude,crime_2022_05$Latitude, crime_2022_05$Crime.type, crime_2022_05$LSOA.code), FUN=length)
+
+names(kde_anti_1) <- c("longtitude","latitude","Crime.type","code")
+
+kde_anti_1 <- subset(kde_anti_1 , kde_anti_1 $Crime.type== 'Anti-social behaviour')
+
+kde_anti_1 <- merge (kde_anti_1 ,pop_not, by="code")
+
+xy <- kde_anti_1 [,c(2,3)]
+
+kde_anti_1 <- SpatialPointsDataFrame(coords = xy, data = kde_anti_1,
+                               proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
+
+kde.output <- kernelUD(kde_anti_1, h="href", grid = 1000)
+
+kde <- raster(kde.output)
+
+bounding_box <- bb(data_not)
+
+masked_kde <- raster::mask(kde, data_not)
+
+  
+  ## Mapping KDE
+  
+  tm_shape(masked_kde, bbox = bounding_box) + tm_raster("ud", breaks=c(0,50,100,150,200,250,300),legend.show = TRUE,legend.hist = TRUE, palette = "-RdYlBu") +
+  tm_shape(data_not) + tm_borders(alpha=.5, col = "white") +
+  tm_layout(frame = FALSE,legend.outside = TRUE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))
+  
+  ## Moran's I
+  anti_3$`ASB rate`[is.na( anti_3$`ASB rate`)] <- 0
+
+  sf_use_s2(FALSE)
+  neighbours <- poly2nb(data_not, queen = FALSE)
+  listw <- nb2listw(neighbours,style = "W")
+ moran.test(base_anti$`ASB rate`, listw)
+  moran.test(anti_1@data$`ASB rate`, listw)
+    moran.test(anti_2@data$`ASB rate`, listw)
+      moran.test(anti_3@data$`ASB rate`, listw)
+      
+      
+       vio_3$`VSA rate`[is.na( vio_3$`VSA rate`)] <- 0
+      
+      moran.test(vio_1@data$`VSA rate`, listw)
+    moran.test(vio_2@data$`VSA rate`, listw)
+      moran.test(vio_3@data$`VSA rate`, listw)
+       moran.test(vio_0@data$`VSA rate`, listw)
+  
+  View(anti_1)
+  
+```
+```{r setup, include=FALSE}
+
+anti_2 <- subset(crime_2, crime_2$type== 'Anti-social behaviour')
+
+anti_2 <- merge (anti_2,pop_not, by="code")
+
+anti_2$"ASB rate" <- anti_2$count/anti_2$pop*100000
+
+anti_2 <- merge (data_not,anti_2, by.x="code",by.y="code")
+
+tm_shape(anti_2) + tm_borders(lwd = .2)+ tm_polygons(col="ASB rate", palette="BrBG", midpoint = 0,breaks = c(0,500, 1000, 1500,2000, 2500,3000),,
+          legend.is.portrait = FALSE)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+
+  tm_layout(legend.outside.position = "bottom",
+            legend.outside.size = 0.35,
+            legend.outside = TRUE)
+
+
+View(vio_1)
+
+color2 <- c("floralwhite","cadetblue3","coral1")
+
+tm_shape(LSOA_ASB) + tm_borders(lwd = .2)+ tm_polygons(col="pre_lkd", palette=color2, midpoint = 0)+tmap_options(check.and.fix = TRUE) +tm_layout(frame = FALSE)+ 
+  tm_compass(type = "8star", position = c("right", "top")) +tm_scale_bar(breaks = c(0, 1, 2), text.size = 1, position = c("right", "bottom"))+ tm_layout( legend.outside=TRUE,legend.text.size = 1, legend.title.size=1.5)
+
+
+
+
+
+````
+
+
+

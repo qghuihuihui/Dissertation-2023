@@ -1,0 +1,374 @@
+---
+title: "Dissertation"
+author: "QGH"
+date: '2022-11-05'
+output: html_document
+---
+
+```{r install packages, include=FALSE}
+
+install.packages("units")
+install.packages("gpclib")
+install.packages("maptools")
+install.packages("earth")
+install.packages("caret")
+install.packages("sqldf")
+install.packages("spatialEco")
+install.packages("base")
+install.packages("qtl2")
+
+```
+
+## Library
+
+```{r library}
+
+library("tidyverse")
+library("units")
+library("sf")
+library("tmap")
+library("rgeos")
+library("rgdal")
+library("raster")
+library("sqldf")
+library(gpclib)
+library(maptools)
+library(ggplot2)
+library(earth)
+library("spatialEco")
+library("base")
+library(qtl2)
+
+```
+
+## LSOA boundary file
+
+```{r dataset, echo=FALSE}
+
+lsoa_shp <- readOGR("Lower_Layer_Super_Output_Areas_December_2011_Generalised_Clipped__Boundaries_in_England_and_Wales.shp")
+
+```
+
+
+## Population
+
+```{r population, echo=FALSE}
+
+## Pop
+
+lsoa_pop <- read.csv("lsoa_population.csv")
+
+lsoa_pop$All.Ages <- as.numeric(gsub(",","",lsoa_pop$All.Ages))
+
+pop_notting  <- subset(lsoa_pop, lsoa_pop$LA.name..2018.boundaries.== 'Nottingham')
+
+nrow(pop_notting)
+
+pop_no <- data.frame(pop_notting$LSOA.Code, pop_notting$All.Ages)
+
+names(pop_no) <- c("Code","Pop")
+
+```
+
+## Merge Pop with LSOA
+
+```{r subset, echo=FALSE}
+
+## Subset
+
+outline<- merge(lsoa_shp,pop_no, by.x="lsoa11cd", by.y="Code")
+
+outline <- sp.na.omit(outline)
+
+```
+
+## LSOA characteristics
+
+```{r characteristic, echo=FALSE}
+
+## characteristic
+
+imd <- read.csv('IMD.csv')
+
+imd_notting  <- subset(imd, imd$Local.Authority.District.name..2019.== 'Nottingham')
+
+imd_sub <- data.frame(imd_notting$LSOA.code..2011., imd_notting$Employment.Decile..where.1.is.most.deprived.10..of.LSOAs.,imd_notting$Education..Skills.and.Training.Decile..where.1.is.most.deprived.10..of.LSOAs.,imd_notting$Health.Deprivation.and.Disability.Decile..where.1.is.most.deprived.10..of.LSOAs.)
+
+names(imd_sub) <- c("Code","Employment","Education","Health")
+
+outline_characteristic<- merge(outline,imd_sub, by.x="lsoa11cd", by.y="Code")
+
+```
+
+## Crime data loading
+
+```{r crime data, echo=FALSE}
+library(readr)
+
+crime_2019_10 <- read_csv("2019-10/2019-10-nottinghamshire-street.csv")
+
+crime_2019_11 <- read_csv("2019-11/2019-11-nottinghamshire-street.csv")
+
+crime_2019_12 <- read_csv("2019-12/2019-12-nottinghamshire-street.csv")
+
+crime_2020_01 <- read_csv("2020-01/2020-01-nottinghamshire-street.csv")
+
+crime_2020_02 <- read_csv("2020-02/2020-02-nottinghamshire-street.csv")
+
+crime_2020_03 <- read_csv("2020-03/2020-03-nottinghamshire-street.csv")
+
+crime_2020_04 <- read_csv("2020-04/2020-04-nottinghamshire-street.csv")
+
+crime_2020_05 <- read_csv("2020-05/2020-05-nottinghamshire-street.csv")
+
+crime_2020_06 <- read_csv("2020-06/2020-06-nottinghamshire-street.csv")
+
+crime_2020_07 <- read_csv("2020-07/2020-07-nottinghamshire-street.csv")
+
+crime_2020_08 <- read_csv("2020-08/2020-08-nottinghamshire-street.csv")
+
+crime_2020_09 <- read_csv("2020-09/2020-09-nottinghamshire-street.csv")
+
+crime_2020_10 <- read_csv("2020-10/2020-10-nottinghamshire-street.csv")
+
+crime_2020_11 <- read_csv("2020-11/2020-11-nottinghamshire-street.csv")
+
+crime_2020_12 <- read_csv("2020-12/2020-12-nottinghamshire-street.csv")
+
+crime_2021_01 <- read_csv("2021-01/2021-01-nottinghamshire-street.csv")
+
+crime_2021_02 <- read_csv("2021-02/2021-02-nottinghamshire-street.csv")
+
+crime_2021_03 <- read_csv("2021-03/2021-03-nottinghamshire-street.csv")
+
+crime_2021_04 <- read_csv("2021-04/2021-04-nottinghamshire-street.csv")
+
+crime_2021_05 <- read_csv("2021-05/2021-05-nottinghamshire-street.csv")
+
+crime_2021_06 <- read_csv("2021-06/2021-06-nottinghamshire-street.csv")
+
+crime_2021_07 <- read_csv("2021-07/2021-07-nottinghamshire-street.csv")
+
+crime_2021_08 <- read_csv("2021-08/2021-08-nottinghamshire-street.csv")
+
+crime_2021_09 <- read_csv("2021-09/2021-09-nottinghamshire-street.csv")
+
+crime_2021_10 <- read_csv("2021-10/2021-10-nottinghamshire-street.csv")
+
+crime_2021_11 <- read_csv("2021-11/2021-11-nottinghamshire-street.csv")
+
+crime_2021_12 <- read_csv("2021-12/2021-12-nottinghamshire-street.csv")
+
+crime_2022_01 <- read_csv("2022-01/2022-01-nottinghamshire-street.csv")
+
+crime_2022_02 <- read_csv("2022-02/2022-02-nottinghamshire-street.csv")
+
+crime_2022_03 <- read_csv("2022-03/2022-03-nottinghamshire-street.csv")
+
+crime_2022_04 <- read_csv("2022-04/2022-04-nottinghamshire-street.csv")
+
+crime_2022_05 <- read_csv("2022-05/2022-05-nottinghamshire-street.csv")
+
+crime_2022_06 <- read_csv("2022-06/2022-06-nottinghamshire-street.csv")
+
+crime_2022_07 <- read_csv("2022-07/2022-07-nottinghamshire-street.csv")
+
+crime_2022_08 <- read_csv("2022-08/2022-08-nottinghamshire-street.csv")
+
+crime_2022_09<- read_csv("2022-09/2022-09-northamptonshire-street.csv")
+
+crime_2022_10<- read_csv("2022-10-nottinghamshire-street.csv")
+
+crime_2019_04<- read_csv("2019-04-nottinghamshire-street.csv")
+
+crime_2019_05<- read_csv("2019-05-nottinghamshire-street.csv")
+
+crime_2019_06<-read_csv("2019-06-nottinghamshire-street.csv")
+
+crime_2019_07<- read_csv("2019-07-nottinghamshire-street.csv")
+
+crime_2019_09<- read_csv("2019-09-nottinghamshire-street.csv")
+
+```
+
+## Total Crime data -- Nottinghamshire
+
+```{r total crime data, echo=FALSE}
+
+Total_crime<- rbind(crime_2019_04,crime_2019_05,crime_2019_06,crime_2019_07,crime_2019_09,crime_2019_10, crime_2019_11,crime_2019_12,crime_2020_01,crime_2020_02,crime_2020_03,crime_2020_04,crime_2020_05,crime_2020_06,crime_2020_07,crime_2020_08,crime_2020_09,crime_2020_10,crime_2020_11,crime_2020_12,crime_2021_01,crime_2021_02,crime_2021_03,crime_2021_04,crime_2021_05,crime_2021_06,crime_2021_07,crime_2021_08,crime_2021_09,crime_2021_10,crime_2021_11,crime_2021_12,crime_2022_01,crime_2022_02,crime_2022_03,crime_2022_04,crime_2022_05,crime_2022_06,crime_2022_07,crime_2022_08,crime_2022_09,crime_2022_10)
+
+total_crime_month<- aggregate(Total_crime$Crime.ID, by=list(Total_crime$Month,Total_crime$Crime.type,Total_crime$LSOA.code), FUN=length)
+
+names(total_crime_month) <- c("Month","Type","LSOA","Count")
+
+total_crime_LSOA <- aggregate(Total_crime$`Crime ID`, by=list(Total_crime$`LSOA code`), FUN=length)
+
+names(total_crime_LSOA) <- c("LSOA","Count")
+
+```
+
+## Total Crime data -- Nottingham
+
+```{r total crime data, echo=FALSE}
+
+Notting_crime <- merge(outline,total_crime_LSOA,by.x="lsoa11cd", by.y="LSOA")
+
+Notting_crime <- as.data.frame(Notting_crime@data$lsoa11cd)
+
+names(Notting_crime) <- c("LSOA")
+
+total_crime_month<- merge(Notting_crime, total_crime_month, by=c("LSOA","LSOA"))
+
+total_crime_month<- aggregate(total_crime_month$Count, by=list(total_crime_month$Month,total_crime_month$Type), FUN=sum)
+
+names(total_crime_month) <- c("Month","Type","Count")
+```
+
+## Crime rate
+
+```{r total crime rate per 100,000, echo=FALSE}
+
+## Total population across 182 LSOAs: 337098
+
+sum(outline_characteristic@data$Pop)
+
+## Overall
+
+total_crime_month_copy$Rate<- total_crime_month_copy$Count/ 337098 * 100000
+
+total_crime_month_copy$Month <- as.Date(paste(total_crime_month_copy$Month,"-01",sep=""))
+
+ggplot(total_crime_month_copy, aes(x=Month, y= Rate, color=Type)) +
+geom_line()+
+  scale_x_date(date_labels = "%b %Y")+ geom_vline(xintercept = as.numeric(total_burglary_count_copy$Month[6]), color="blue")+ geom_vline(xintercept = as.numeric(total_burglary_count_copy$Month[14]), color="green")+ geom_vline(xintercept = as.numeric(total_burglary_count_copy$Month[16]), color="yellow")
+
+## Justify why selecting anti-social behavior (inverse-u-shaped) and violence and sexual offences (u-shaped)
+
+```
+
+## Examine the crime rate in three phases
+
+```{r Cretaing phases data, echo=FALSE}
+
+## 2019_10
+
+crime_2019_10_violence <- subset(crime_2019_10, crime_2019_10$`Crime type`== '	
+Violence and sexual offences')
+
+crime_2019_10_violence<- aggregate(crime_2019_10$`Crime ID`, by=list(crime_2019_10$`LSOA code`), FUN=length)
+
+names(crime_2019_10_violence) <- c("Code","Count")
+
+## 2020_10
+
+crime_2020_10_violence <- subset(crime_2020_10, crime_2020_10$`Crime type`== '	
+Violence and sexual offences')
+
+crime_2020_10_violence<- aggregate(crime_2020_10$`Crime ID`, by=list(crime_2020_10$`LSOA code`), FUN=length)
+
+names(crime_2020_10_violence) <- c("Code","Count")
+
+######### 2022_10
+
+crime_2022_10_violence <- subset(crime_2022_10, crime_2022_10$`Crime type`== '	
+Violence and sexual offences')
+
+crime_2022_10_violence<- aggregate(crime_2022_10$`Crime ID`, by=list(crime_2022_10$`LSOA code`), FUN=length)
+
+names(crime_2022_10_violence) <- c("Code","Count")
+
+## Merging with Pop
+
+merge_1 <- merge(crime_2019_10_violence,pop_no, by="Code")
+merge_2 <- merge(crime_2020_10_violence,merge_1, by="Code")
+merge_3 <- merge(crime_2022_10_violence,merge_2, by="Code")
+
+View(merge_3)
+
+#### 2022_10 being added
+names(merge_3) <- c("Code","2020_count","2019_count", "2022_count","Pop")
+merge_3$rate_2019 <- merge_3$`2019_count`/merge_2$Pop * 100000
+merge_3$rate_2020 <- merge_3$`2020_count`/merge_2$Pop * 100000
+merge_3$rate_2022 <- merge_3$`2022_count`/merge_2$Pop * 100000
+
+```
+
+## Merging Data
+
+```{r Merging urbanisation data, echo=FALSE}
+
+## Merging with crime data
+
+Phase_0_1_outline <- merge(outline_characteristic,merge_3,by.x="lsoa11cd", by.y="Code") 
+
+## Merging with rural data
+
+rural <- read.csv("Rural_Urban_Classification_(2011)_of_Lower_Layer_Super_Output_Areas_in_England_and_Wales.csv")
+
+rural <- data.frame(rural$LSOA11CD, rural$RUC11)
+
+names(rural) <- c("LSOA","Rural")
+
+## All LSOAs at Nottingham are classified as urban minor conurbation
+
+Phase_0_1_outline_rural <- merge(Phase_0_1_outline,rural,by.x="lsoa11cd", by.y="LSOA") 
+
+table(Phase_0_1_outline_rural@data$Rural)
+
+## Using population density as a proxy to the urbanisation (Dataset from ONS)
+
+pop_density <- read.csv("Pop_Density.csv")
+
+Phase_0_1_outline_den <- merge(Phase_0_1_outline,pop_density,by.x="lsoa11cd", by.y="Code") 
+
+```
+
+## Transport Data
+
+```{r Merging transportation data, echo=FALSE}
+
+PTAI <- read.csv("GB_LSOA_PTAI_2016.csv")
+
+View(PTAI)
+
+Phase_0_1_outline_den_ptai <- merge(Phase_0_1_outline_den,PTAI,by.x="lsoa11cd", by.y="LSOA11CD") 
+
+```
+
+## Merging all datasets
+
+```{r Merging family disruption data, echo=FALSE}
+
+family <- read.csv("family.csv")
+
+names(family) <- c ("name","code","pop_16_count","pop_16_per","never_married_count","never_married_per","married_count","married_per","same_sex_partner_count","same_sex_partner_per","seperated_married_count","seperated_married_per","divorce_count","divorce_per","surviving_partner_count","surviving_partner_per")
+
+Phase_0_1_outline_den_ptai_family <- merge(Phase_0_1_outline_den_ptai,family,by.x="lsoa11cd", by.y="code") 
+Dataset <- Phase_0_1_outline_den_ptai_family
+
+View(Dataset)
+
+Dataset@data<- Dataset@data[,-(5:6)]
+
+Dataset@data<- Dataset@data[,-(3)]
+
+Dataset@data<- Dataset@data[,-(11)]
+
+Dataset@data<- Dataset@data[,-(14)]
+
+Dataset@data<- Dataset@data[,-(17)]
+
+writeOGR(obj=Dataset, dsn="data_v1", layer="data_v1", driver="ESRI Shapefile")
+
+```
+
+## Rename Dataset
+
+```{r load data, include=FALSE}
+
+data_not<- readOGR("data_v1/data_v1.shp")
+
+names(data_not@data) <- c ("code","ob_id","name","pop","employ","edu","health","2020_count","2019_count","2022_count","rate_2019","2020_rate","2022_rate","area_km","den","ptai","pop_16","pop_16_per","nev_count","nev_per","mar_count","mar_per","same_count","same_per","sep_count","sep_per","div_count","div_per","sur_count","sur_per")
+
+```
+
